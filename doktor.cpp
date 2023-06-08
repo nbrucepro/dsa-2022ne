@@ -102,6 +102,34 @@ public:
         };
         location.close();
      };
+
+     void searchDisease(const string& diseaseName) {
+        vector<string> locationsWithDiseases;
+        ifstream file("locations.csv");
+        string line;
+
+        while(getline(file,line)) {
+            istringstream iss(line);
+            string location;
+            string currdisease;
+
+            getline(iss,location,',');
+            while(getline(iss,currdisease,',')) {
+                if(currdisease == diseaseName ) {
+                    locationsWithDiseases.push_back(location);
+                    break;
+                }
+            }
+        }
+        file.close();
+        if(!locationsWithDiseases.empty()) {
+            for(const auto& location:locationsWithDiseases) {
+                cout<<location<<endl;
+            }
+        } else {
+            cout << "No locations found with that disease"<< endl;
+        }
+     }
 };
 
 void executeCommand(const string& command, DiseaseDatabase database){
@@ -132,6 +160,11 @@ void executeCommand(const string& command, DiseaseDatabase database){
         if (c2 == "diseases") {
         database.listDiseases();
         }
+    }
+    else if(action == "where") {
+        string diseasename;
+        iss >> diseasename;
+        database.searchDisease(diseasename);
     }
     else if (command == "exit") {
       return;
