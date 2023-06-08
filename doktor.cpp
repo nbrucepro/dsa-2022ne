@@ -50,7 +50,7 @@ public:
         cout << "Location added successfully." << endl;
     }  
     
-    void diseaseToLocation(const string& locationName,const string& disease) {
+    void diseaseToLocation(const string& locationName,const string& disease,const string& cases) {
         ifstream file("locations.csv");
         bool locationExists = false;
         string line;
@@ -68,7 +68,7 @@ public:
         file.close();
         if(locationExists) {
             ofstream outfile("locations.csv",ios_base::app);
-            outfile << locationName << "," << disease <<endl;
+            outfile << locationName << "," << disease << "," << cases <<endl;
             outfile.close();
             cout << "Disease cases recorded for location: " << locationName << std::endl;
         }
@@ -76,6 +76,32 @@ public:
         cout << "Location not found!";
         }
     }  
+
+    void listLocations() {
+
+        ifstream location("locations.csv");
+        string line;
+        while(getline(location,line)){
+         cout<< line<<endl;
+        };
+        location.close();
+     };
+    void listDiseases() {
+
+        fstream location("locations.csv",ios::in);
+        string line;
+        while(getline(location,line)) {
+         string dis;
+         stringstream ss(line);
+         getline(ss, dis, ',');
+
+            if (getline(ss, dis, ',')) {
+             cout<< dis<<endl;
+            }  
+          
+        };
+        location.close();
+     };
 };
 
 void executeCommand(const string& command, DiseaseDatabase database){
@@ -93,8 +119,19 @@ void executeCommand(const string& command, DiseaseDatabase database){
     else if(action == "record") {
         string locationName;        
         string disease;
-        iss >> locationName >> disease;
-        database.diseaseToLocation(locationName, disease);
+        string cases;
+        iss >> locationName >> disease >> cases;
+        database.diseaseToLocation(locationName, disease, cases);
+    }
+    else if(action == "list") {
+        string c2;
+        iss >> c2;
+        if (c2 == "locations") {
+        database.listLocations();
+        }
+        if (c2 == "diseases") {
+        database.listDiseases();
+        }
     }
     else if (command == "exit") {
       return;
