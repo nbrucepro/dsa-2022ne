@@ -33,7 +33,7 @@ public:
   // Implement methods for other attributes
 };
 
-class DiseaseDatabase{
+class DiseaseDatabase {
 private:
   std::vector<Location> locations;
 
@@ -132,8 +132,6 @@ public:
      }
 
     void searchCase(const string& location, const string& disease) {
-        // cout<<location <<" " <<disease;
-    //    vector<string> locationsWithDiseases;
        ifstream file("locations.csv");
        string line;
        int overalcases = 0;
@@ -144,25 +142,41 @@ public:
            string cases;
            getline(iss,currlocation,',');
            if(currlocation == location ) {
-            // cout << currlocation << endl;
            getline(iss,currdisease,',');
 
            if(currdisease == disease) {
-            // cout << disease << endl;
             getline(iss,cases,',');            
             overalcases += stoi(cases);
-            cout << overalcases << endl;            
+            cout << "Cases of " <<currdisease<<" at "<<currlocation<<" are: " << overalcases << endl;            
            }
            }
-
-            //    if(location != NULL)
-            //      if(currdisease) 
-                   
+            else {
+            cout<< "Not found!" << endl;
+           }
+        file.close();
+    };
+    };
+void verallCases(const string& diseasename) {
+    ifstream file("locations.csv");
+    string line;
+    string currlocation;
+    string currdisease;
+    string currcases;
+    int overallcases = 0;
+    while(getline(file,line)) {
+        istringstream iss(line);
+        getline(iss,currlocation,',');
+        getline(iss,currdisease,',');
+        if(currdisease == diseasename) {
+            getline(iss,currcases,',');     
+            overallcases += stoi(currcases);       
         }
-       file.close();
+    }
+    if(overallcases > 0) {
+        cout << "Total cases of " <<"'"<< diseasename <<"'"<< "=" << overallcases<<endl;
     }
 };
-
+};
 void executeCommand(const string& command, DiseaseDatabase database){
     istringstream iss(command);
     string action;
@@ -202,8 +216,14 @@ void executeCommand(const string& command, DiseaseDatabase database){
         iss >> location;
         string diseases;
         iss >> diseases;
+        if(!location.empty()){
+            database.verallCases(location);
+        if(!diseases.empty()){            
         database.searchCase(location, diseases);
+        }
+        }
     }
+    // else if(action == "")
     else if (command == "exit") {
       return;
     } 
