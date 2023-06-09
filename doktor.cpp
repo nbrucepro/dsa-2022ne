@@ -173,7 +173,7 @@ void verallCases(const string& diseasename) {
         }
     }
     if(overallcases > 0) {
-        cout << "Total cases of " <<"'"<< diseasename <<"'"<< "=" << overallcases<<endl;
+        cout << "Total cases of  " <<"'"<< diseasename <<"'"<< "=" << overallcases<<endl;
     }
 };
 };
