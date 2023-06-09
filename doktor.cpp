@@ -130,6 +130,37 @@ public:
             cout << "No locations found with that disease"<< endl;
         }
      }
+
+    void searchCase(const string& location, const string& disease) {
+        // cout<<location <<" " <<disease;
+    //    vector<string> locationsWithDiseases;
+       ifstream file("locations.csv");
+       string line;
+       int overalcases = 0;
+       while(getline(file,line)) {
+           istringstream iss(line);
+           string currlocation;
+           string currdisease;
+           string cases;
+           getline(iss,currlocation,',');
+           if(currlocation == location ) {
+            // cout << currlocation << endl;
+           getline(iss,currdisease,',');
+
+           if(currdisease == disease) {
+            // cout << disease << endl;
+            getline(iss,cases,',');            
+            overalcases += stoi(cases);
+            cout << overalcases << endl;            
+           }
+           }
+
+            //    if(location != NULL)
+            //      if(currdisease) 
+                   
+        }
+       file.close();
+    }
 };
 
 void executeCommand(const string& command, DiseaseDatabase database){
@@ -165,6 +196,13 @@ void executeCommand(const string& command, DiseaseDatabase database){
         string diseasename;
         iss >> diseasename;
         database.searchDisease(diseasename);
+    }
+    else if(action == "cases") {    
+        string location;
+        iss >> location;
+        string diseases;
+        iss >> diseases;
+        database.searchCase(location, diseases);
     }
     else if (command == "exit") {
       return;
