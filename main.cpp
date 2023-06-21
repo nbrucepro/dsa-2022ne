@@ -1,11 +1,16 @@
+//including headers
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <cctype>
+#include <regex>  
 
 using namespace std;
 
+//defining structure of our item
 struct Item
 {
     int item_id;
@@ -13,10 +18,48 @@ struct Item
     int item_quantity;
     string item_registration_date;
 };
+bool isValidDateFormat(const string &dateString);
 
-void addItem(const string &filename, int item_id, const string &item_name, int item_quantity, const string &item_registration_date)
+//validating the entered registration date;
+bool isValidDateFormat(const string &dateString)
 {
+    // Validate the date format using regular expression
+    regex dateRegex("\\d{4}-\\d{2}-\\d{2}");
+
+    return regex_match(dateString, dateRegex);
+}
+void addItemLogics(const string &filename, int item_id, const string &item_name, int item_quantity, const string &item_registration_date)
+{
+    // Check if the item already exists in the file
+    ifstream file(filename);
+    string line;
+    while (getline(file, line))
+    {
+        stringstream ss(line);
+        string item_id_str;
+        getline(ss, item_id_str, ',');
+        string item_id_name;
+        getline(ss, item_id_name, ',');
+
+        int existing_item_id = stoi(item_id_str);
+        if (existing_item_id == item_id)
+        {
+            cout << "Item with ID " << item_id << " already exists." << endl;
+            file.close();
+            return;
+        }
+        string existing_item_name = item_id_name;
+        if( existing_item_name == item_name) {
+            cout << "Item with name " << item_name << " already exists." << endl;
+            file.close();
+            return;
+        }
+        // if ( )
+    }
+    file.close();
+
     // Create an instance of the Item structure
+
     Item item;
     item.item_id = item_id;
     item.item_name = item_name;
@@ -24,21 +67,28 @@ void addItem(const string &filename, int item_id, const string &item_name, int i
     item.item_registration_date = item_registration_date;
 
     // Open the CSV file in append mode
-    ofstream file(filename, ios::app);
-    if (!file.is_open())
+    ofstream outfile(filename, ios::app);
+    if (!outfile.is_open())
     {
         cout << "Failed to open the file." << endl;
         return;
     }
+        // Validate the item_registration_date format
+    if (!isValidDateFormat(item_registration_date))
+    {
+        cout << "Invalid item_registration_date format. Please provide the date in the format: yyyy-mm-dd." << endl;
+        return;
+    }
 
     // Write the item data to the CSV file
-    file << item.item_id << "," << item.item_name << "," << item.item_quantity << "," << item.item_registration_date << endl;
+    outfile << item.item_id << "," << item.item_name << "," << item.item_quantity << "," << item.item_registration_date << endl;
 
     // Close the file
-    file.close();
+    outfile.close();
 
     cout << "Item added successfully." << endl;
 }
+
 
 void listItems(const string &filename)
 {
@@ -76,13 +126,80 @@ void listItems(const string &filename)
 
     // Sort items by item name in alphabetical order
     sort(items.begin(), items.end(), [](const Item &a, const Item &b)
-         { return a.item_id < b.item_id; });
+         { return a.item_name < b.item_name; });
 
     // Display the sorted items
-    cout << "Items in alphabetical order:" << endl;
+    if(items.empty()){
+        cout << "No items found!!" << endl;
+    }else{
+        cout<<endl;
+        cout <<endl<< "Inventory Items in alphabetical order:" << endl<<endl;
+    }
     for (const auto &item : items)
     {
-        cout << "ID: " << item.item_id << ", Name: " << item.item_name << ", Quantity: " << item.item_quantity << ", Registration Date: " << item.item_registration_date << endl;
+        cout << "Item ID :" << item.item_id  << "\t" <<"  Item Name :" << item.item_name << "\t" << "\t"  << "Quantity :" << item.item_quantity << "          Reg Date :" << item.item_registration_date << endl;
+    }
+}
+void executeCommand(const string &filename, const string &input)
+{
+    istringstream iss(input);
+    string command;
+    iss >> command;
+
+    // Convert the command to lowercase
+    transform(command.begin(), command.end(), command.begin(), ::tolower);
+
+    if (command == "itemadd")
+    {
+        int item_id;
+        string item_name;
+        int item_quantity;
+        string item_registration_date;
+
+        if (!(iss >> item_id >> item_name >> item_quantity >> item_registration_date))
+        {
+            cout << "Invalid input format. Please provide item_id, item_name, item_quantity and item_registration_date." << endl;
+            return;
+        }
+
+        // Get the current date as the item_registration_date
+        time_t now = time(0);
+        tm *date = localtime(&now);
+        string item_registration_date_now = to_string(1900 + date->tm_year) + "-" +
+                                        to_string(1 + date->tm_mon) + "-" +
+                                        to_string(date->tm_mday);
+        if(item_registration_date == ""){
+            item_registration_date = item_registration_date_now;
+        }                                        
+
+        // Add the item to the inventory
+        // ... your code for adding the item to the inventory ...
+        // addItem(filename,)
+        addItemLogics(filename, item_id, item_name, item_quantity, item_registration_date);
+    }
+    else if (command == "itemslist")
+    {
+        // ... code for listing items ...
+        listItems(filename);
+    }
+    else if (command == "help")
+    {
+        // ... code for displaying help information ...
+            cout<< "-------------------------------------------------"<<endl;
+            cout << "*               Commands Syntaxes               *" << endl;
+            cout<< "-------------------------------------------------"<<endl;
+            cout << "itemadd <item_id> <item_name> <item_quantity> <item_registration_date>" << endl;
+            cout << "itemslist" << endl;
+    }
+    else if (command == "exit" || command == "exit ")
+    {
+        // ... code for quitting the program ...
+        return;
+    }
+    else
+    {
+        cout << "Invalid command. Please try again." << endl;
+        return;
     }
 }
 
@@ -92,55 +209,16 @@ int main()
 
     while (true)
     {
-        string command;
-        cout << "Enter a command (itemadd to add a new item, itemslist to list items, quit to exit): ";
-        getline(cin, command);
+        string input;
+        cout << "Enter a command : ";
+        getline(cin, input);
 
-        if (command == "itemadd")
-        {
-            int item_id, item_quantity;
-            string item_name, item_registration_date;
-
-            cout << "Enter item ID: ";
-            cin >> item_id;
-            cin.ignore();
-
-            cout << "Enter item name: ";
-            getline(cin, item_name);
-
-            cout << "Enter item quantity: ";
-            cin >> item_quantity;
-            cin.ignore();
-
-            cout << "Enter item registration date: ";
-            getline(cin, item_registration_date);
-
-            addItem(filename, item_id, item_name, item_quantity, item_registration_date);
-        }
-        else if (command == "itemslist")
-        {
-
-            listItems(filename);
-        }
-        else if (command == "help") {
-            // Display help information
-            cout << "Available commands and their syntaxes:" << endl;
-            cout << "itemadd <item_id> <item_name> <item_quantity> <item_registration_date>" << endl;
-            cout << "itemslist" << endl;
-            cout << "help" << endl;
-            cout << "quit" << endl;
-        }
-        else if (command == "quit")
-        {
+        executeCommand(filename, input);
+        if( input == "exit") {
             break;
-        }
-        else
-        {
-            cout << "Invalid command. Please try again." << endl;
         }
         cout << endl;
     }
 
     return 0;
 }
-// build the system so that the commands and entered data should not be case sensitive
